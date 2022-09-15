@@ -6,7 +6,6 @@ e = 0
 i = np.pi/6
 g = np.pi/6
 
-
 # Phase
 P_REG = 0.85 #Calculated from Legendre polynomials, b = -0.4 c = 0.25
 # From Pascuzzo et al. 2022

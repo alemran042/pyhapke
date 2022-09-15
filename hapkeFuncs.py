@@ -1,26 +1,17 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
-import geopandas as gpd
-import geopandas as geopd
-import rasterio as rio
-import rasterio
-import shapely
-import pandas as pd
 import scipy.optimize
-import copy
-import numpy.polynomial
 import scipy
 
-import shapely.geometry
-import shapely.affinity
-import rasterio.mask
-
-from constants import *
-
-
+from .constants import *
 
 def compute_H(ssa, x):
+    """Method for computing Chandrasekhar's H function, developed by Shuai Li
+
+    Args:
+        ssa (float or np.ndarray): single scattering albedo
+        x (float): mu or mu0, i.e. cosines of incidence and emmittence angles
+    """
     y = np.sqrt(1-ssa)
     r0 = (1-y)/(1+y)
 
@@ -29,11 +20,11 @@ def compute_H(ssa, x):
 
 
 def compute_H2(ssa, x):
-    """_summary_
+    """Alternative method for computing Chandrasekhar's H function, developed by Shuai Li
 
     Args:
-        ssa (_type_): _description_
-        x (_type_): _description_
+        ssa (float or np.ndarray): single scattering albedo
+        x (float): mu or mu0, i.e. cosines of incidence and emmittence angles
     """
     y = np.sqrt(1-ssa)
 
