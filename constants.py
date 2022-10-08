@@ -7,7 +7,7 @@ i = np.pi/6
 g = np.pi/6
 
 # Phase
-P_REG = 0.85 #Calculated from Legendre polynomials, b = -0.4 c = 0.25
+P_REG = 0.8098 #Calculated from Legendre polynomials, b = -0.4 c = 0.25
 # From Pascuzzo et al. 2022
 (b,c) = (0.5,0.8)
 P_ICE = (1-c) * (1 - b**2) / (1 - 2 * b * np.cos(g) + b**2) ** (3/2) + c * (1 - b**2) / (1 + 2 * b * np.cos(g) + b**2)**(3/2)

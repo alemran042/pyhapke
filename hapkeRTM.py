@@ -7,7 +7,7 @@ from .constants import *
 from .hapkeFuncs import *
 
 class HapkeRTM:
-    def __init__(self, i = np.pi/6, e = 0, g = np.pi/6, P = P_REG, wl = None):
+    def __init__(self, i = 0, e = np.pi/6, g = np.pi/6, P = P_REG, wl = None, poros = 0.41):
         """Initialize an instance of the Hapke Radiative Transfer Model, which has tools to calculate ssa from reflectance, and vice versa
 
         Args:
@@ -20,9 +20,11 @@ class HapkeRTM:
         """
         self.mu0 = np.cos(i)
         self.mu = np.cos(e)
-        self.B = compute_B(g)
+        self.B = compute_B(poros = poros, g = g )
+        #self.B = 0.4248
         self.P = P
         self.wl = wl
+        self.hapke_polynomial = None
 
         pass
 
@@ -66,8 +68,8 @@ class HapkeRTM:
         P = self.P
 
         # Compute H-funct
-        H = compute_H2(ssa, mu)
-        H0 = compute_H2(ssa, mu0)
+        H = compute_H(ssa, mu)
+        H0 = compute_H(ssa, mu0)
 
         #R = (ssa/4) * mu0 / (mu0 + mu) * ((1 + B) * P + H * H0 - 1)
         R = (ssa/4) * mu0/ (mu0 + mu) * ((1 + B) * P + H * H0 - 1)
@@ -78,6 +80,29 @@ class HapkeRTM:
     def hapke_function_BDRF(self, ssa):
         """Function R(omega), assuming other parameters are known. This is 
         the BDRF version of the function (Hapke equation 10.5), computing Bi-Directional Reflectance
+
+        Args:
+            ssa (float or nd.array): single scattering albedo
+
+        Returns:
+            float or nd.array: Bidirectional reflectance distribution factor
+        """
+        mu0 = self.mu0
+        mu = self.mu
+        B = self.B
+        P = self.P
+
+        # Compute H-funct
+        H = compute_H2(ssa, mu)
+        H0 = compute_H2(ssa, mu0)
+
+        #R = (ssa/4) * mu0 / (mu0 + mu) * ((1 + B) * P + H * H0 - 1)
+        R = (ssa/4 / np.pi) / (mu0 + mu) * ((1 + B) * P + H * H0 - 1)
+
+        return R
+
+    def hapke_function(self, ssa):
+        """Function R(omega), assuming other parameters are known, where R is bidirectional reflectance
 
         Args:
             ssa (float or nd.array): single scattering albedo
@@ -95,10 +120,12 @@ class HapkeRTM:
         H0 = compute_H2(ssa, mu0)
 
         #R = (ssa/4) * mu0 / (mu0 + mu) * ((1 + B) * P + H * H0 - 1)
-        R = (ssa/4 / np.pi) / (mu0 + mu) * ((1 + B) * P + H * H0 - 1)
+        R = (ssa/4 / np.pi)  * mu0 / (mu0 + mu) * ((1 + B) * P + H * H0 - 1)
 
-    def compute_ssa_from_R(self, R, method = 'lm', model = "REFF"):
-        """Compute single scattering albedo given radiance and input. By default, uses Levenberg-Marquardt algorithm as part of 
+        return R
+
+    def compute_ssa_from_R(self, R, method = 'lm', model = "RADF"):
+        """Compute single scattering albedo given reflectance or radiance and input. By default, uses Levenberg-Marquardt algorithm as part of 
         scipy.optimize.root. Hybr method (scipy default) not recommended, due to difficulty of finding simualted jacobian.
 
         Args:
@@ -119,15 +146,20 @@ class HapkeRTM:
             def obj_func(ssa, R):
                 Rpred = self.hapke_function_RADF(ssa)
                 return Rpred - R
+        elif model is None:
+            def obj_func(ssa, R):
+                Rpred = self.hapke_function(ssa)
+                return Rpred - R
+            
 
         if type(R) is np.ndarray:
             x0 = np.ones_like(R) * 0.5
         else:
             x0 = 0.5
 
-        sol = scipy.optimize.root(fun = obj_func, x0 = x0, args = (R), method = method)
+        sol = scipy.optimize.root(fun = obj_func, x0 = x0, args = (R), method = method, tol = 1e-15)
 
         return sol.x
+
+    #def calculate_hapke_polynomial(self, )
         
-
-

@@ -37,7 +37,7 @@ def compute_H2(ssa, x):
 
     return num/den
 
-def compute_B(g = np.pi/6):
+def compute_B(poros, g = np.pi/6):
     """ Computes the opposition effect B(g), using Hapke 9.22
 
     Args:
@@ -47,11 +47,11 @@ def compute_B(g = np.pi/6):
         B: opposition effect
     """
 
-    O = 0.41
+    O = poros
     B0 = 1
     h = -3/8 * np.log(1 - O)
     
-    return B0/(1 + (1/h) * np.tan(g) * g/2)
+    return B0/(1 + (1/h) * np.tan(g/2) )
 
 def convert_oc_to_ssa(wl, n, k, D):
     """Converts empircal data about the optical constant to single scattering albedo as a function of wavelength
@@ -128,6 +128,6 @@ def compute_mixed_ssa(Mis, ssas, densities = [RHO_REG, RHO_ICE], diameters = [D_
         ssa = ssas[i]
         d = diameters[i]
 
-        num += M * ssa/(rho * d)
-        den += M /(rho * d)
+        num += M * ssa/(rho)
+        den += M /(rho)
     return num/den
